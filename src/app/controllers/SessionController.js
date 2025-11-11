@@ -2,7 +2,8 @@ import * as Yup from 'yup';
 import { object } from 'yup';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
-
+import jwt from 'jsonwebtoken';
+import authConfig from '../../config/auth.js';
 class SessionController {
   async store(request, response) {
     const schema = object({
@@ -44,12 +45,15 @@ class SessionController {
     if (!isPasswordCorrect) {
       emailOrPasswordIncorrect();
     }
-
+    const token = jwt.sign({ id: existingUser.id }, authConfig.secret, {
+      expiresIn: authConfig.expiresIn,
+    });
     return response.status(200).json({
       id: existingUser.id,
       name: existingUser.name,
       email: existingUser.email,
       admin: existingUser.admin,
+      token,
     });
   }
 }
